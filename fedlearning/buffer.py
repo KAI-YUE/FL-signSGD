@@ -1,0 +1,44 @@
+import copy
+
+import torch
+
+class GradBuffer(object):
+    def __init__(self, grad_dict, mode="copy"):
+        self._grad_dict = copy.deepcopy(grad_dict)
+        if mode == "zeros":
+            for grad_name, grad_value in self._grad_dict.items():
+                self._grad_dict[grad_name] = torch.zeros_like(grad_value)
+        
+    def __add__(self, grad_buffer):
+        grad_dict = copy.deepcopy(self._grad_dict)
+        for grad_name, grad_value in grad_dict.items():
+            grad_dict[grad_name] = self._grad_dict[grad_name] + grad_buffer._grad_dict[grad_name]
+
+        return GradBuffer(grad_dict)
+
+    def __sub__(self, grad_buffer):
+        grad_dict = copy.deepcopy(self._grad_dict)
+        for grad_name, grad_value in grad_dict.items():
+            grad_dict[grad_name] = self._grad_dict[grad_name] - grad_buffer._grad_dict[grad_name]
+
+        return GradBuffer(grad_dict)
+
+    def __mul__(self, rhs):
+        grad_dict = copy.deepcopy(self._grad_dict)
+        for grad_name, grad_value in grad_dict.items():
+            grad_dict[grad_name] = rhs*self._grad_dict[grad_name]
+
+        return GradBuffer(grad_dict)
+
+    def normalize(self, compressor, threshold):
+        for grad_name, grad_value in self._grad_dict.items():
+            self._grad_dict[grad_name] = compressor.normalize_aggregation(grad_value, threshold)
+
+    def push(self, grad_dict):
+        self._grad_dict = copy.deepcopy(grad_dict)
+
+    def grad_dict(self):
+        return self._grad_dict
+
+
+
