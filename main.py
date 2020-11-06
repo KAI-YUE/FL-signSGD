@@ -14,6 +14,7 @@ from config import load_config
 from config.utils import *
 from fedlearning import compressor_registry
 from fedlearning.myoptimizer import *
+from fedlearning.attacker import *
 from deeplearning import nn_registry
 from deeplearning.validate import *
 from deeplearning.dataset import *
@@ -29,7 +30,10 @@ def train(model, config, logger, record):
     """    
     # initialize userIDs
     users_to_sample = config.users
-    userIDs = np.arange(config.users) 
+    userIDs = np.arange(config.users)
+    user_id_sets = generate_attacker_list(config)
+    user_ids = user_id_sets["normal_user_ids"]
+    attacker_list = user_id_sets["attacker_list"] 
 
     # initialize the optimizer for the server model
     dataset = assign_user_data(config, logger)
@@ -40,7 +44,7 @@ def train(model, config, logger, record):
     validate_and_log(model, dataset, config, record, logger)
     
     for comm_round in range(config.rounds):
-        userIDs_candidates = userIDs[:users_to_sample]
+        userIDs_candidates = user_ids
         
         # Wait for all users updating locally
         local_packages = []
@@ -52,12 +56,20 @@ def train(model, config, logger, record):
             local_package = updater.uplink_transmit()
             local_packages.append(local_package)
 
+        for i, userID in enumerate(attacker_list):
+            local_package = random_grad_package(model)
+            local_packages.append(local_package)
+
         # Update the global model
         global_updater.global_step(model, local_packages)
 
         # log and record
         logger.info("Round {:d}".format(comm_round))
         validate_and_log(model, dataset, config, record, logger)
+
+        if comm_round == config.scheduler[0]:
+            config.lr *= config.lr_scaler
+            config.scheduler.pop(0)
 
 def main():
     config = load_config()

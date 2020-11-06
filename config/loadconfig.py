@@ -1,6 +1,7 @@
 import yaml
 import json
 import os
+import numpy as np
 
 def load_config():
     """Load configurations of yaml file"""
@@ -14,5 +15,7 @@ def load_config():
     
     for key in config:
         setattr(cfg, key, config[key])
+
+    cfg.scheduler.append(np.nan)
 
     return cfg

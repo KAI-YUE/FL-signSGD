@@ -1,6 +1,7 @@
 # device: "cuda" | "cpu"
 device: cuda
-imbalance: false
+imbalance: true
+num_attackers: 1
 
 # b parameter as described in the original paper
 b: 0.01
@@ -10,7 +11,7 @@ b: 0.01
 # random_sampling:   whether or not perform random sampling before each iteration
 # sampling_fraction: the fraction of users to sample
 # alpha:             the alpha parameter of the Dirichlet distribution 
-rounds: 30
+rounds: 50
 users: 30
 iid: true
 # iid: false
@@ -41,8 +42,15 @@ local_batch_size: 100
 # lr: 0.1
 # lr: 0.1
 # lr: 0.001
-# lr: 0.0003
-lr: 0.002
+lr: 0.0003
+# lr: 0.002
+lr_scaler: 0.5
+scheduler: 
+# - 10
+# - 20
+- 30
+- 40
+- 1000
 momentum: 0
 weight_decay: 0
 
@@ -56,10 +64,10 @@ compressor: "sto_signSGD"
 # sample_size:   the size of one sample [height x width/num_of_features]
 # classes:      the number of classes
 record_dir:     ../This{}.dat
-test_data_dir:  /media/kaiyue/2D8A97B87FB4A806/Datasets/mnist/test.dat
-train_data_dir: /media/kaiyue/2D8A97B87FB4A806/Datasets/mnist/train.dat
-# test_data_dir:  /media/kaiyue/2D8A97B87FB4A806/Datasets/fmnist/test.dat
-# train_data_dir: /media/kaiyue/2D8A97B87FB4A806/Datasets/fmnist/train.dat
+# test_data_dir:  /media/kaiyue/2D8A97B87FB4A806/Datasets/mnist/test.dat
+# train_data_dir: /media/kaiyue/2D8A97B87FB4A806/Datasets/mnist/train.dat
+test_data_dir:  /media/kaiyue/2D8A97B87FB4A806/Datasets/fmnist/test.dat
+train_data_dir: /media/kaiyue/2D8A97B87FB4A806/Datasets/fmnist/train.dat
 sample_size:
 - 28
 - 28
